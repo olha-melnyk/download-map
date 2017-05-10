@@ -76,7 +76,6 @@ class RegionsParser {
         for(Continent continent : continents) {
 
             Log.i(TAG, "continent: " + continents);
-//            Log.i(TAG, "continent: " + continent.getName());
 
             for(Region region : continent.getRegions()) {
                 Log.i(TAG, region.toString());
@@ -85,7 +84,5 @@ class RegionsParser {
 
         return continents;
     }
-
-
 }
 

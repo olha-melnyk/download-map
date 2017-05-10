@@ -1,11 +1,14 @@
 package ws.bilka.downloadmap;
 
 import android.content.Context;
-import android.content.Intent;
+import android.graphics.Color;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.support.v7.widget.Toolbar;
+import android.text.Html;
+import android.util.Log;
 import android.view.View;
 import android.widget.ProgressBar;
 import android.widget.TextView;
@@ -20,31 +23,51 @@ import java.util.ArrayList;
 import java.util.List;
 
 import ws.bilka.downloadmap.adapter.ContinentAdapter;
+import ws.bilka.downloadmap.adapter.RegionAdapter;
 import ws.bilka.downloadmap.model.Continent;
+import ws.bilka.downloadmap.model.Region;
 
-public class MainActivity extends AppCompatActivity {
+public class RegionActivity extends AppCompatActivity {
+
 
     private static final String TAG = MainActivity.class.getSimpleName();
+    RegionAdapter regionAdapter;
     RecyclerView recyclerView;
-    List<Continent> continents;
+    List<Region> regions;
     Context context;
+    Continent continent;
+    Toolbar toolbar;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_main);
-        continents = new ArrayList<>();
+        setContentView(R.layout.activity_region);
 
-        recyclerView = (RecyclerView)findViewById(R.id.recycle_view);
+        continent = (Continent) getIntent().getSerializableExtra("continents");
+        Log.i(TAG, "Continent name: " + continent.getName());
+
+        toolbar = (Toolbar)findViewById(R.id.toolbar);
+        setSupportActionBar(toolbar);
+        getSupportActionBar().setTitle(continent.getName());
+
+        toolbar.setNavigationIcon(getResources().getDrawable(R.drawable.ic_back_arrow));
+        toolbar.setNavigationOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                onBackPressed();
+            }
+        });
+
+        regions = new ArrayList<>();
+
+        recyclerView = (RecyclerView)findViewById(R.id.region_recycle_view);
         final LinearLayoutManager layoutManager = new LinearLayoutManager(this);
         recyclerView.setLayoutManager(layoutManager);
-
         recyclerView.addOnItemTouchListener(
                 new RecyclerItemClickListener(context, recyclerView ,new RecyclerItemClickListener.OnItemClickListener() {
                     @Override public void onItemClick(View view, int position) {
-                        Intent intent = new Intent(MainActivity.this, RegionActivity.class);
-                        intent.putExtra("continents", continents.get(position));
-                        startActivity(intent);
+
                     }
 
                     @Override public void onLongItemClick(View view, int position) {
@@ -58,9 +81,11 @@ public class MainActivity extends AppCompatActivity {
             XmlPullParser parser = factory.newPullParser();
             try {
                 parser.setInput(getAssets().open("regions.xml"), "utf-8");
-                continents = RegionsParser.parse(parser);
-                ContinentAdapter adapter = new ContinentAdapter(continents);
-                recyclerView.setAdapter(adapter);
+
+                regionAdapter = new RegionAdapter(continent.getRegions(), getApplicationContext());
+                recyclerView.setAdapter(regionAdapter);
+
+
             } catch (IOException e) {
                 e.printStackTrace();
             }
@@ -69,6 +94,7 @@ public class MainActivity extends AppCompatActivity {
             e.printStackTrace();
             // TODO add alert if something went wrong
         }
+
 
         final ProgressBar progressBar = (ProgressBar)findViewById(R.id.progress);
         final TextView freeSpaceText = (TextView)findViewById(R.id.free_space);

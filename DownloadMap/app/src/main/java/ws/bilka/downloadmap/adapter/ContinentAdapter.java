@@ -1,5 +1,4 @@
-package ws.bilka.downloadmap;
-
+package ws.bilka.downloadmap.adapter;
 
 import android.os.Build;
 import android.support.v7.widget.RecyclerView;
@@ -11,6 +10,7 @@ import android.widget.TextView;
 
 import java.util.List;
 
+import ws.bilka.downloadmap.R;
 import ws.bilka.downloadmap.model.Continent;
 
 public class ContinentAdapter extends RecyclerView.Adapter<ContinentAdapter.ViewHolder> {
@@ -34,7 +34,6 @@ public class ContinentAdapter extends RecyclerView.Adapter<ContinentAdapter.View
         } else {
             holder.name.setText(Html.fromHtml(continent.getName()));
         }
-//        holder.countries.add((Country) continent.getCountries());
     }
 
     @Override
