@@ -16,9 +16,9 @@ class RegionsParser {
 
     private static final String TAG = RegionsParser.class.getSimpleName();
 
-    public static List<Continent> parse(XmlPullParser parser) throws XmlPullParserException, IOException {
-        int eventType = parser.getEventType();
+    public static List<Region> parse(XmlPullParser parser) throws XmlPullParserException, IOException {
 
+        int eventType = parser.getEventType();
         int depth = 0;
         int prevDepth = 0;
 
@@ -27,62 +27,62 @@ class RegionsParser {
         Region currentRegion = null;
 
         while(eventType != XmlPullParser.END_DOCUMENT) {
-
             if(eventType == XmlPullParser.START_TAG) {
                 depth++;
 
                 String typeName = parser.getAttributeValue(null, "type");
-
                 if (typeName != null && typeName.contains("continent")) {
                     String continentName = parser.getAttributeValue(null, "translate");
-                    Log.i(TAG, "> [" + depth + "] continent: " + continentName);
-
                     Continent continent = new Continent(continentName);
                     currentContinent = continent;
                     continents.add(continent);
-
                 } else {
                     String regionName = parser.getAttributeValue(null, "name");
-                    Log.i(TAG, ">>> [" + depth + "] region: " + regionName);
+                    Log.i(TAG, ">>> [" + depth + " prev:" + prevDepth + "] region: " + regionName);
 
                     if(currentContinent != null) {
-                        Region region = new Region(regionName);
-
+                        Region region = null;
                         if(depth == 3) {
+                            region = new Region(regionName);
                             currentContinent.addRegion(region);
                         } else {
                             if(depth > prevDepth) {
+                                region = new Region(regionName);
                                 currentRegion.addChild(region);
 
                             } else if(depth == prevDepth) {
+                                Log.i(TAG, "WTF?");
+                                region = new Region(regionName);
                                 currentRegion.getParent().addChild(region);
                             } else {
-                                currentRegion.getParent().getParent().addChild(region);
+                                region = new Region(regionName);
+                                if(currentRegion.getParent() != null && currentRegion.getParent().getParent() != null)
+                                    currentRegion.getParent().getParent().addChild(region);
+                                else
+                                    currentRegion.addChild(region);
                             }
                         }
-
                         currentRegion = region;
                     }
                 }
+                prevDepth = depth;
 
             } else if(eventType == XmlPullParser.END_TAG) {
                 depth--;
             }
-
             eventType = parser.next();
-            prevDepth = depth;
         }
 
+        List<Region> regions = new LinkedList<>();
         for(Continent continent : continents) {
-
-            Log.i(TAG, "continent: " + continents);
-
-            for(Region region : continent.getRegions()) {
-                Log.i(TAG, region.toString());
+            Region region = new Region(continent.getName());
+            for(Region r : continent.getRegions()) {
+                r.setParent(region);
+                region.addChild(r);
             }
+            regions.add(region);
         }
-
-        return continents;
+        return regions;
     }
 }
 

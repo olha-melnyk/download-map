@@ -3,9 +3,11 @@ package ws.bilka.downloadmap.model;
 import java.io.Serializable;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.jar.Pack200;
 
 
 public class Region implements Serializable {
+
     private static final long serialVersionUID = 1L;
 
     private String name;
@@ -25,15 +27,28 @@ public class Region implements Serializable {
     }
 
     public void addChild(Region child) {
+        child.setParent(this);
         childs.add(child);
     }
 
     public boolean hasChilds() {
-        return !childs.isEmpty();
+        return childs.size() > 0;
+    }
+
+    public List<Region> getChilds() {
+        return childs;
+    }
+
+    public int numOfChilds() {
+        return childs.size();
     }
 
     public Region getParent() {
         return parent;
+    }
+
+    public void setParent(Region parent) {
+        this.parent = parent;
     }
 
     @Override

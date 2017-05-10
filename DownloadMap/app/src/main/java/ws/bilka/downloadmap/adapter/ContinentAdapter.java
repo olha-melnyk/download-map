@@ -12,11 +12,12 @@ import java.util.List;
 
 import ws.bilka.downloadmap.R;
 import ws.bilka.downloadmap.model.Continent;
+import ws.bilka.downloadmap.model.Region;
 
 public class ContinentAdapter extends RecyclerView.Adapter<ContinentAdapter.ViewHolder> {
-    private List<Continent> continents;
+    private List<Region> continents;
 
-    public ContinentAdapter(List<Continent> continents) {
+    public ContinentAdapter(List<Region> continents) {
         this.continents = continents;
     }
 
@@ -28,7 +29,7 @@ public class ContinentAdapter extends RecyclerView.Adapter<ContinentAdapter.View
 
     @Override
     public void onBindViewHolder(ViewHolder holder, int position) {
-        Continent continent = continents.get(position);
+        Region continent = continents.get(position);
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
             holder.name.setText(Html.fromHtml(continent.getName(), Html.FROM_HTML_MODE_LEGACY));
         } else {

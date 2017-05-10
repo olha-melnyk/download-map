@@ -3,6 +3,9 @@ package ws.bilka.downloadmap;
 
 import android.os.Environment;
 import android.os.StatFs;
+import android.text.format.Formatter;
+
+import java.io.File;
 
 public class DeviceMemory {
 

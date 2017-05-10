@@ -21,24 +21,25 @@ import java.util.List;
 
 import ws.bilka.downloadmap.adapter.ContinentAdapter;
 import ws.bilka.downloadmap.model.Continent;
+import ws.bilka.downloadmap.model.Region;
 
 public class MainActivity extends AppCompatActivity {
 
     private static final String TAG = MainActivity.class.getSimpleName();
     RecyclerView recyclerView;
-    List<Continent> continents;
+    List<Region> continents;
     Context context;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
         continents = new ArrayList<>();
 
-        recyclerView = (RecyclerView)findViewById(R.id.recycle_view);
         final LinearLayoutManager layoutManager = new LinearLayoutManager(this);
+        recyclerView = (RecyclerView)findViewById(R.id.recycle_view);
         recyclerView.setLayoutManager(layoutManager);
-
         recyclerView.addOnItemTouchListener(
                 new RecyclerItemClickListener(context, recyclerView ,new RecyclerItemClickListener.OnItemClickListener() {
                     @Override public void onItemClick(View view, int position) {
@@ -77,9 +78,8 @@ public class MainActivity extends AppCompatActivity {
         final float freeSpace = DeviceMemory.getInternalFreeSpace();
         final DecimalFormat outputFormat = new DecimalFormat("#.##");
 
-
         if (null != freeSpaceText) {
-            freeSpaceText.setText(outputFormat.format(freeSpace) + " MB");
+            freeSpaceText.setText(outputFormat.format(freeSpace) + " GB");
         }
 
         if (null != progressBar) {
