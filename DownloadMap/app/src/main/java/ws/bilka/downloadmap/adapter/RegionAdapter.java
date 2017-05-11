@@ -8,10 +8,12 @@ import android.database.Cursor;
 import android.net.Uri;
 import android.os.Environment;
 import android.support.v7.widget.RecyclerView;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageButton;
+import android.widget.ProgressBar;
 import android.widget.TextView;
 
 import java.text.DecimalFormat;
@@ -30,8 +32,8 @@ public class RegionAdapter extends RecyclerView.Adapter<RegionAdapter.ViewHolder
     private DownloadManager mgr=null;
     private long lastDownload=-1L;
     private Context context;
-
     private ProgressDialog progressBarDialog;
+    private int dl_progress;
 
     public static final double SPACE_KB = 1024;
     public static final double SPACE_MB = 1024 * SPACE_KB;
@@ -39,21 +41,41 @@ public class RegionAdapter extends RecyclerView.Adapter<RegionAdapter.ViewHolder
     public static final double SPACE_TB = 1024 * SPACE_GB;
 
     public class ViewHolder extends RecyclerView.ViewHolder  {
-        public ImageButton dwnldStart;
-        public TextView name;
+
+        ImageButton dwnldStart;
+        TextView name;
+        ImageButton removeBtn;
+        ProgressBar progressBar;
 
         public ViewHolder(View view) {
             super(view);
             context = view.getContext();
-            name = (TextView) view.findViewById(R.id.region_name);
-            progressBarDialog = new ProgressDialog(context);
+            name = (TextView)view.findViewById(R.id.region_name);
+            progressBar = (ProgressBar)view.findViewById(R.id.progressBar);
+            progressBar.setVisibility(View.INVISIBLE);
+            removeBtn = (ImageButton)view.findViewById(R.id.remove_btn);
             dwnldStart = (ImageButton)view.findViewById(R.id.download_btn);
             dwnldStart.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
+                    v.setVisibility(View.INVISIBLE);
+                    progressBar.setVisibility(View.VISIBLE);
+                    removeBtn.setVisibility(View.VISIBLE);
+                    removeBtn.setOnClickListener(new View.OnClickListener() {
+                        @Override
+                        public void onClick(View v) {
+                            mgr.remove(lastDownload);
+                            progressBar.setVisibility(View.INVISIBLE);
+                            removeBtn.setVisibility(View.INVISIBLE);
+                            dwnldStart.setVisibility(View.VISIBLE);
+                        }
+                    });
                     startDownload(v);
+                    progressBar.setProgress(ProgressDialog.STYLE_HORIZONTAL);
+                    progressBar.setIndeterminate(true);
                 }
             });
+
         }
     }
 
@@ -67,6 +89,8 @@ public class RegionAdapter extends RecyclerView.Adapter<RegionAdapter.ViewHolder
     public ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
         View itemView = LayoutInflater.from(parent.getContext())
                 .inflate(R.layout.regions_item, parent, false);
+
+        progressBarDialog = new ProgressDialog(context);
         return new ViewHolder(itemView);
     }
 
@@ -118,24 +142,33 @@ public class RegionAdapter extends RecyclerView.Adapter<RegionAdapter.ViewHolder
 
                     Cursor cursor = mgr.query(q);
                     cursor.moveToFirst();
-                    final int bytes_downloaded = cursor.getInt(cursor
-                            .getColumnIndex(DownloadManager.COLUMN_BYTES_DOWNLOADED_SO_FAR));
-                    final int bytes_total = cursor.getInt(cursor.getColumnIndex(DownloadManager.COLUMN_TOTAL_SIZE_BYTES));
+                    final int bytes_downloaded;
+                    final int bytes_total;
 
-                    if (cursor.getInt(cursor.getColumnIndex(DownloadManager.COLUMN_STATUS)) == DownloadManager.STATUS_SUCCESSFUL) {
-                        downloading = false;
+                    Log.d("Count", String.valueOf(cursor.getCount()));
+                    if (cursor.getCount() > 0) {
+                        bytes_downloaded = cursor.getInt(cursor
+                                .getColumnIndex(DownloadManager.COLUMN_BYTES_DOWNLOADED_SO_FAR));
+                        bytes_total = cursor.getInt(cursor.getColumnIndex(DownloadManager.COLUMN_TOTAL_SIZE_BYTES));
+
+                        dl_progress = (int) ((bytes_downloaded * 100l) / bytes_total);
+
+                        if (cursor.getInt(cursor.getColumnIndex(DownloadManager.COLUMN_STATUS)) == DownloadManager.STATUS_SUCCESSFUL) {
+                            downloading = false;
+                        }
+                    } else {
+                        bytes_downloaded = 0;
+                        bytes_total = 0;
                     }
 
-                    final int dl_progress = (int) ((bytes_downloaded * 100l) / bytes_total);
-
                     ((RegionActivity)context).runOnUiThread(new Runnable() {
-
                         @Override
                         public void run() {
                             progressBarDialog.setProgressPercentFormat(null);
                             progressBarDialog.setProgressNumberFormat((bytes2String(bytes_downloaded)) + " from " + (bytes2String(bytes_total)));
                             progressBarDialog.setCancelable(false);
                             progressBarDialog.setProgress(dl_progress);
+
 
                             if (progressBarDialog.getProgress() == progressBarDialog.getMax()){
                                 progressBarDialog.dismiss();
@@ -147,6 +180,7 @@ public class RegionAdapter extends RecyclerView.Adapter<RegionAdapter.ViewHolder
 
             }
         }).start();
+
         progressBarDialog.setButton(DialogInterface.BUTTON_NEGATIVE, "Close", new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialog, int which) {
