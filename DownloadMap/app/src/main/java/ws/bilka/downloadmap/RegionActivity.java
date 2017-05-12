@@ -57,7 +57,7 @@ public class RegionActivity extends AppCompatActivity {
                             intent.putExtra("continents", continent.getChilds().get(position));
                             startActivity(intent);
                         } else {
-                            Toast.makeText(RegionActivity.this, "Download map!", Toast.LENGTH_SHORT).show();
+                            // maybe toast
                         }
                     }
 

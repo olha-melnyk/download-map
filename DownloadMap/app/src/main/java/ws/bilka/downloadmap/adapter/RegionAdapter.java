@@ -13,6 +13,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageButton;
+import android.widget.LinearLayout;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 
@@ -52,6 +53,7 @@ public class RegionAdapter extends RecyclerView.Adapter<RegionAdapter.ViewHolder
             context = view.getContext();
             name = (TextView)view.findViewById(R.id.region_name);
             progressBar = (ProgressBar)view.findViewById(R.id.progressBar);
+            final LinearLayout linearLayout = (LinearLayout)view.findViewById(R.id.line_clickable);
             progressBar.setVisibility(View.INVISIBLE);
             removeBtn = (ImageButton)view.findViewById(R.id.remove_btn);
             dwnldStart = (ImageButton)view.findViewById(R.id.download_btn);
@@ -60,6 +62,12 @@ public class RegionAdapter extends RecyclerView.Adapter<RegionAdapter.ViewHolder
                 public void onClick(View v) {
                     v.setVisibility(View.INVISIBLE);
                     progressBar.setVisibility(View.VISIBLE);
+                    linearLayout.setOnClickListener(new View.OnClickListener() {
+                        @Override
+                        public void onClick(View v) {
+                            progressBarDialog.show();
+                        }
+                    });
                     removeBtn.setVisibility(View.VISIBLE);
                     removeBtn.setOnClickListener(new View.OnClickListener() {
                         @Override
@@ -113,11 +121,6 @@ public class RegionAdapter extends RecyclerView.Adapter<RegionAdapter.ViewHolder
         Environment
                 .getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS)
                 .mkdirs();
-
-        progressBarDialog.setTitle("Downloads");
-        progressBarDialog.setProgressStyle(ProgressDialog.STYLE_HORIZONTAL);
-        progressBarDialog.setProgress(0);
-
         mgr = (DownloadManager) context.getSystemService(Context.DOWNLOAD_SERVICE);
 
         lastDownload=
@@ -127,7 +130,6 @@ public class RegionAdapter extends RecyclerView.Adapter<RegionAdapter.ViewHolder
                         .setAllowedOverRoaming(false)
                         .setDestinationInExternalPublicDir(Environment.DIRECTORY_DOWNLOADS, "map")
                 );
-
 
         new Thread(new Runnable() {
 
@@ -164,12 +166,13 @@ public class RegionAdapter extends RecyclerView.Adapter<RegionAdapter.ViewHolder
                     ((RegionActivity)context).runOnUiThread(new Runnable() {
                         @Override
                         public void run() {
+                            progressBarDialog.setTitle("Downloads");
+                            progressBarDialog.setProgressStyle(ProgressDialog.STYLE_HORIZONTAL);
+                            progressBarDialog.setProgress(0);
                             progressBarDialog.setProgressPercentFormat(null);
                             progressBarDialog.setProgressNumberFormat((bytes2String(bytes_downloaded)) + " from " + (bytes2String(bytes_total)));
                             progressBarDialog.setCancelable(false);
                             progressBarDialog.setProgress(dl_progress);
-
-
                             if (progressBarDialog.getProgress() == progressBarDialog.getMax()){
                                 progressBarDialog.dismiss();
                             }
@@ -180,14 +183,12 @@ public class RegionAdapter extends RecyclerView.Adapter<RegionAdapter.ViewHolder
 
             }
         }).start();
-
         progressBarDialog.setButton(DialogInterface.BUTTON_NEGATIVE, "Close", new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialog, int which) {
                 progressBarDialog.dismiss();
             }
         });
-        progressBarDialog.show();
         v.setEnabled(false);
     }
 
