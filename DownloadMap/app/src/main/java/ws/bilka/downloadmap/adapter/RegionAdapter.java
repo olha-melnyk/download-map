@@ -10,12 +10,14 @@ import android.os.Environment;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
 import android.view.LayoutInflater;
+import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageButton;
 import android.widget.LinearLayout;
 import android.widget.ProgressBar;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
@@ -57,30 +59,36 @@ public class RegionAdapter extends RecyclerView.Adapter<RegionAdapter.ViewHolder
             progressBar.setVisibility(View.INVISIBLE);
             removeBtn = (ImageButton)view.findViewById(R.id.remove_btn);
             dwnldStart = (ImageButton)view.findViewById(R.id.download_btn);
-            dwnldStart.setOnClickListener(new View.OnClickListener() {
+            dwnldStart.setOnTouchListener(new View.OnTouchListener() {
                 @Override
-                public void onClick(View v) {
-                    v.setVisibility(View.INVISIBLE);
-                    progressBar.setVisibility(View.VISIBLE);
-                    linearLayout.setOnClickListener(new View.OnClickListener() {
-                        @Override
-                        public void onClick(View v) {
-                            progressBarDialog.show();
-                        }
-                    });
-                    removeBtn.setVisibility(View.VISIBLE);
-                    removeBtn.setOnClickListener(new View.OnClickListener() {
-                        @Override
-                        public void onClick(View v) {
-                            mgr.remove(lastDownload);
-                            progressBar.setVisibility(View.INVISIBLE);
-                            removeBtn.setVisibility(View.INVISIBLE);
-                            dwnldStart.setVisibility(View.VISIBLE);
-                        }
-                    });
-                    startDownload(v);
-                    progressBar.setProgress(ProgressDialog.STYLE_HORIZONTAL);
-                    progressBar.setIndeterminate(true);
+                public boolean onTouch(View v, MotionEvent event) {
+                    if (event.getAction() == MotionEvent.ACTION_DOWN) {
+                        v.setVisibility(View.INVISIBLE);
+                        progressBar.setVisibility(View.VISIBLE);
+                        linearLayout.setOnTouchListener(new View.OnTouchListener() {
+                            @Override
+                            public boolean onTouch(View v, MotionEvent event) {
+                                progressBarDialog.show();
+                                return true;
+                            }
+                        });
+                        removeBtn.setVisibility(View.VISIBLE);
+                        removeBtn.setOnTouchListener(new View.OnTouchListener() {
+                            @Override
+                            public boolean onTouch(View v, MotionEvent event) {
+                                mgr.remove(lastDownload);
+                                progressBar.setVisibility(View.INVISIBLE);
+                                removeBtn.setVisibility(View.INVISIBLE);
+                                dwnldStart.setVisibility(View.VISIBLE);
+                                return true;
+                            }
+
+                        });
+                        startDownload(v);
+                        progressBar.setProgress(ProgressDialog.STYLE_HORIZONTAL);
+                        progressBar.setIndeterminate(true);
+                    }
+                    return true;
                 }
             });
 
